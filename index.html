@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Diary | Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-body">
+
+    <div class="floating-heart heart1">♡</div>
+    <div class="floating-heart heart2">♡</div>
+    <div class="floating-heart heart3">♡</div>
+
+    <div class="auth-container">
+
+        <div class="auth-left">
+            <div class="book-animation">
+                <div class="book">
+                    <span>📖</span>
+                </div>
+            </div>
+
+            <h1>My <span>Private</span> Diary</h1>
+            <p>
+                Your thoughts. Your memories. Your private world.
+            </p>
+        </div>
+
+        <div class="auth-card">
+
+            <div class="lock-icon">🔐</div>
+
+            <h2 id="formTitle">Welcome Back</h2>
+
+            <p class="auth-subtitle" id="formSubtitle">
+                Login to open your private diary
+            </p>
+
+            <form id="authForm">
+
+                <div class="input-group">
+                    <label>User ID</label>
+                    <input type="text" id="userId" placeholder="Enter your User ID" autocomplete="username" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+
+                    <div class="password-box">
+                        <input type="password" id="password" placeholder="Enter password"
+                            autocomplete="current-password" required>
+
+                        <button type="button" onclick="togglePassword()" id="eyeBtn">👁️</button>
+                    </div>
+                </div>
+
+                <div id="confirmGroup" class="input-group hidden">
+                    <label>Confirm Password</label>
+
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                </div>
+
+
+                <button class="auth-btn" type="submit" id="authBtn">
+                    <span id="btnText">🔓 Login</span>
+                </button>
+
+                <audio id="clickSound"
+                    src="C:\Users\Dell\OneDrive\Desktop\don't touch\freesound_gamestudio-button-394464.mp3"
+                    preload="auto"></audio>
+
+            </form>
+
+            <p class="message" id="message"></p>
+
+            <div class="switch-mode">
+                <span id="switchText">Don't have an account?</span>
+
+                <button type="button" onclick="switchMode()" id="switchBtn">
+                    Create Account
+                </button>
+                
+            </div>
+
+            <div class="security-note">
+                🔒 Your diary stays inside this browser.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+        let isRegister = false;
+
+        const form = document.getElementById("authForm");
+        const formTitle = document.getElementById("formTitle");
+        const formSubtitle = document.getElementById("formSubtitle");
+        const confirmGroup = document.getElementById("confirmGroup");
+        const confirmPassword = document.getElementById("confirmPassword");
+        const btnText = document.getElementById("btnText");
+        const switchText = document.getElementById("switchText");
+        const switchBtn = document.getElementById("switchBtn");
+        const message = document.getElementById("message");
+
+        function switchMode() {
+
+            isRegister = !isRegister;
+
+            message.textContent = "";
+
+            if (isRegister) {
+
+                formTitle.textContent = "Create Your Diary";
+
+                formSubtitle.textContent =
+                    "Create a private account for your diary";
+
+                confirmGroup.classList.remove("hidden");
+
+                confirmPassword.required = true;
+
+                btnText.textContent = "✨ Create Account";
+
+                switchText.textContent =
+                    "Already have an account?";
+
+                switchBtn.textContent = "Login";
+
+            } else {
+
+                formTitle.textContent = "Welcome Back";
+
+                formSubtitle.textContent =
+                    "Login to open your private diary";
+
+                confirmGroup.classList.add("hidden");
+
+                confirmPassword.required = false;
+
+                btnText.textContent = "🔓 Login";
+
+                switchText.textContent =
+                    "Don't have an account?";
+
+                switchBtn.textContent = "Create Account";
+            }
+        }
+
+
+        function togglePassword() {
+
+            const password = document.getElementById("password");
+            const eye = document.getElementById("eyeBtn");
+
+            if (password.type === "password") {
+
+                password.type = "text";
+                eye.textContent = "🙈";
+
+            } else {
+
+                password.type = "password";
+                eye.textContent = "👁️";
+            }
+        }
+
+        async function hashPassword(pwd) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(pwd);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function getUsers() {
+
+            return JSON.parse(
+                localStorage.getItem("privateDiaryUsers") || "{}"
+            );
+        }
+
+        function saveUsers(users) {
+
+            localStorage.setItem(
+                "privateDiaryUsers",
+                JSON.stringify(users)
+            );
+        }
+
+        form.addEventListener("submit", async function (e) {
+
+            e.preventDefault();
+
+            const userId =
+                document.getElementById("userId")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+            const password =
+                document.getElementById("password").value;
+
+            if (userId.length < 3) {
+
+                showMessage(
+                    "User ID must contain at least 3 characters.",
+                    "error"
+                );
+
+                return;
+            }
+
+            if (password.length < 6) {
+
+                showMessage(
+                    "Password must contain at least 6 characters.",
+                    "error"
+                );
+
+                return;
+            }
+
+            const users = getUsers();
+
+            if (isRegister) {
+
+                if (users[userId]) {
+
+                    showMessage(
+                        "This User ID already exists.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                if (
+                    password !==
+                    confirmPassword.value
+                ) {
+
+                    showMessage(
+                        "Passwords do not match.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                const passwordHash =
+                    await hashPassword(password);
+
+                users[userId] = {
+                    password: passwordHash,
+                    createdAt: new Date().toISOString()
+                };
+
+                saveUsers(users);
+
+                localStorage.setItem(
+                    "diary_" + userId,
+                    JSON.stringify([])
+                );
+
+                showMessage(
+                    "Account created successfully! Please Login now.",
+                    "success"
+                );
+
+                setTimeout(() => {
+                    switchMode();
+                    document.getElementById("password").value = "";
+                    document.getElementById("confirmPassword").value = "";
+                }, 1500);
+
+            } else {
+
+                if (!users[userId]) {
+
+                    showMessage(
+                        "User ID not found. Please Create an Account first.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                const passwordHash =
+                    await hashPassword(password);
+
+                if (
+                    passwordHash !==
+                    users[userId].password
+                ) {
+
+                    showMessage(
+                        "Incorrect password.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+                localStorage.setItem(
+                    "currentUser",
+                    userId
+                );
+
+                showMessage(
+                    "Login successful! Opening diary...",
+                    "success"
+                );
+
+                setTimeout(() => {
+
+                    window.location.href =
+                        "diary.html";
+
+                }, 800);
+            }
+
+        });
+        const authBtn = document.getElementById("authBtn");
+        const clickSound = document.getElementById("clickSound");
+
+        authBtn.addEventListener("click", function () {
+            clickSound.currentTime = 0;
+            clickSound.play();
+        });
+
+        function showMessage(text, type) {
+
+            message.textContent = text;
+
+            message.className =
+                "message " + type;
+        }
+
+    </script>
+
+</body>
+
+</html>
