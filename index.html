@@ -64,13 +64,11 @@
                 </div>
 
 
-                <button class="auth-btn" type="submit" id="authBtn">
+                <button class="auth-btn" type="submit" onclick="buttonSound()">
                     <span id="btnText">🔓 Login</span>
                 </button>
 
-                <audio id="clickSound"
-                    src="C:\Users\Dell\OneDrive\Desktop\don't touch\freesound_gamestudio-button-394464.mp3"
-                    preload="auto"></audio>
+
 
             </form>
 
@@ -82,7 +80,7 @@
                 <button type="button" onclick="switchMode()" id="switchBtn">
                     Create Account
                 </button>
-                
+
             </div>
 
             <div class="security-note">
@@ -324,13 +322,6 @@
             }
 
         });
-        const authBtn = document.getElementById("authBtn");
-        const clickSound = document.getElementById("clickSound");
-
-        authBtn.addEventListener("click", function () {
-            clickSound.currentTime = 0;
-            clickSound.play();
-        });
 
         function showMessage(text, type) {
 
@@ -338,6 +329,31 @@
 
             message.className =
                 "message " + type;
+        }
+        function buttonSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(
+                1000,
+                audioContext.currentTime + 0.08
+            );
+
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+                0.01,
+                audioContext.currentTime + 0.12
+            );
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.12);
         }
 
     </script>
