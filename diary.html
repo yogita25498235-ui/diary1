@@ -31,7 +31,7 @@
                 🌙
             </button>
 
-            <button class="logout-btn" id="btn" onclick="logout()">
+            <button class="logout-btn" onclick="buttonSound('click'); logout()">
                 🚪 Logout
             </button>
 
@@ -89,12 +89,9 @@
 
                 </div>
 
-                <button class="save-btn" id="saveBtn" onclick="saveEntry()">
+                <button class="save-btn" onclick="buttonSound('save'); saveEntry()">
                     💾 Save Entry
                 </button>
-                <audio id="clickSound"
-                    src="C:\Users\Dell\OneDrive\Desktop\don't touch\freesound_gamestudio-button-394464.mp3"
-                    preload="auto"></audio>
 
             </div>
 
@@ -303,13 +300,7 @@
                 "Your memory has been saved 🔐"
             );
         }
-        const authBtn = document.getElementById("saveBtn");
-        const clickSound = document.getElementById("clickSound");
 
-        authBtn.addEventListener("click", function () {
-            clickSound.currentTime = 0;
-            clickSound.play();
-        });
 
         function saveData() {
 
@@ -410,19 +401,16 @@
 
             <div class="card-buttons">
 
-                <button
-                    onclick="editEntry(${entry.id})"
-                >
-                    ✏️ Edit
+                <button onclick="buttonSound('click'); editEntry(${entry.id})">
+                  ✏️ Edit
                 </button>
 
-                <button
-                    class="delete"
-                    onclick="deleteEntry(${entry.id})"
-                >
-                    🗑️ Delete
-                </button>
-
+               <button
+              class="delete"
+              onclick="buttonSound('delete'); deleteEntry(${entry.id})"
+               >
+              🗑️ Delete
+              </button>
             </div>
 
         `;
@@ -609,6 +597,59 @@
 
         displayEntries();
         updateCounter();
+        function buttonSound(type = "click") {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = "sine";
+
+            if (type === "delete") {
+                // Delete = lower sound
+                oscillator.frequency.setValueAtTime(350, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(
+                    180,
+                    audioContext.currentTime + 0.15
+                );
+            }
+            else if (type === "save") {
+                // Save/Create = pleasant sound
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(
+                    900,
+                    audioContext.currentTime + 0.1
+                );
+            }
+            else {
+                // Normal click
+                oscillator.frequency.setValueAtTime(
+                    600,
+                    audioContext.currentTime
+                );
+                oscillator.frequency.exponentialRampToValueAtTime(
+                    800,
+                    audioContext.currentTime + 0.08
+                );
+            }
+
+            gainNode.gain.setValueAtTime(
+                0.15,
+                audioContext.currentTime
+            );
+
+            gainNode.gain.exponentialRampToValueAtTime(
+                0.01,
+                audioContext.currentTime + 0.15
+            );
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.15);
+        }
+
 
     </script>
 
